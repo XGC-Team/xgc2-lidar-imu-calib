@@ -10,6 +10,8 @@ p_imu = R * p_lidar + t
 
 方法：相邻帧 ICP（Besl & McKay 1992）得到雷达角速度，再和 IMU 陀螺做时间互相关与 Wahba/SVD 求 `R`（与 LI-Init / Zhu IROS 2022 的角速度对齐同一类）。平移在平面车上往往激励不够，默认保留先验 `t`。
 
+实车录包步骤（XYZIRT、激励、查 `observable_rotation`）见 [docs/record-scout-helios16-bag.md](docs/record-scout-helios16-bag.md)。今天这份 60 s 平面包已放弃用来估外参。
+
 ## 明天实车怎么录
 
 1. `rslidar_sdk` 必须用 `POINT_TYPE=XYZIRT` 编译，让 `/rslidar_points` 带官方 `ring` 和包时间。
