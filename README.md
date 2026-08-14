@@ -1,4 +1,4 @@
-# lidar_imu_calib
+# lidar_imu_calibration
 
 离线辨识雷达相对 IMU 的外参，输出和 Faster-LIO 相同的定义：
 
@@ -19,13 +19,13 @@ p_imu = R * p_lidar + t
 3. 执行：
 
 ```bash
-rosrun lidar_imu_calib record_calib_bag.sh ~/scout-helios16-calib.bag
+rosrun lidar_imu_calibration record_calib_bag.sh ~/scout-helios16-calib.bag
 ```
 
 4. 辨识：
 
 ```bash
-rosrun lidar_imu_calib identify_lidar_imu_extrinsic.py \
+rosrun lidar_imu_calibration identify_lidar_imu_extrinsic.py \
   ~/scout-helios16-calib.bag \
   --prior-t 0,0,0.307 \
   --output /tmp/scout_extrinsic.yaml \

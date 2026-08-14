@@ -37,7 +37,7 @@ rostopic hz /rslidar_points /imu/data_raw
 ## 2. 录什么话题
 
 ```bash
-rosrun lidar_imu_calib record_calib_bag.sh ~/scout-helios16-calib-$(date +%Y%m%d-%H%M).bag
+rosrun lidar_imu_calibration record_calib_bag.sh ~/scout-helios16-calib-$(date +%Y%m%d-%H%M).bag
 ```
 
 脚本会录：
@@ -74,7 +74,7 @@ rosrun lidar_imu_calib record_calib_bag.sh ~/scout-helios16-calib-$(date +%Y%m%d
 ```bash
 rosbag info ~/scout-helios16-calib-*.bag
 
-rosrun lidar_imu_calib identify_lidar_imu_extrinsic.py \
+rosrun lidar_imu_calibration identify_lidar_imu_extrinsic.py \
   ~/scout-helios16-calib-*.bag \
   --prior-t 0,0,0.307 \
   --output /tmp/scout_extrinsic.yaml \

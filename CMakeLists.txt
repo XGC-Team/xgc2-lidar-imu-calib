@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(lidar_imu_calib)
+project(lidar_imu_calibration)
 find_package(catkin REQUIRED)
 catkin_package()
 catkin_install_python(PROGRAMS
