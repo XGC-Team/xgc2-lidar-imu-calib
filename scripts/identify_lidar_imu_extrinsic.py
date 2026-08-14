@@ -261,7 +261,28 @@ def identify(
         aligned = (R @ w_l[mask].T).T
         resid = aligned - w_i[mask]
         report["rotation_rmse_rad_s"] = float(np.sqrt(np.mean(np.sum(resid ** 2, axis=1))))
-        report["observable_rotation"] = report["rotation_rmse_rad_s"] < 0.6
+        # Planar UGV motion is almost all ω_z. Any R_z maps [0,0,ω] to itself,
+        # so Wahba's yaw is unobservable and a noise-fitted yaw smears the
+        # corridor around Z in LIO. Only accept R when roll/pitch excitation
+        # exists (xy rates) or when the fitted yaw is negligible.
+        w_i_m = w_i[mask]
+        xy = float(np.mean(np.linalg.norm(w_i_m[:, :2], axis=1)))
+        zz = float(np.mean(np.abs(w_i_m[:, 2])))
+        yaw_deg = float(np.degrees(Rotation.from_matrix(R).as_euler("zyx")[0]))
+        report["imu_xy_rate_mean"] = xy
+        report["imu_z_rate_mean"] = zz
+        report["fitted_yaw_deg"] = yaw_deg
+        yaw_observable = zz > 1e-3 and xy / max(zz, 1e-6) > 0.25
+        if (not yaw_observable) and abs(yaw_deg) > 3.0:
+            report["notes"].append(
+                "yaw unobservable under planar ω_z-only motion; "
+                "discarded fitted R_z and kept identity. Record pitch/roll "
+                "or a known mechanical yaw."
+            )
+            R = np.eye(3)
+            report["observable_rotation"] = False
+        else:
+            report["observable_rotation"] = report["rotation_rmse_rad_s"] < 0.6
 
     t_vec = np.asarray(prior_t, dtype=np.float64)
     t_vec, t_ok = estimate_translation(

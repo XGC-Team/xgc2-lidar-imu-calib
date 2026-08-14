@@ -32,4 +32,4 @@ rosrun lidar_imu_calib identify_lidar_imu_extrinsic.py \
 
 5. 看 `observable_rotation`。为真才把 `extrinsic_R` / `extrinsic_T` 抄进 Faster-LIO 的 `scout_helios16.yaml`，并保持 `extrinsic_est_en: false`。
 
-当前这份场外 60 秒包主要是平面运动，**平移不可观**，旋转也可能激励不够。脚本会写明，不要强行当标定结果。
+当前这份场外 60 秒包几乎只有绕 Z 的角速度。Wahba 对这种运动**看不出偏航**（`R_z` 把 `[0,0,ω]` 映成自己），拟合出来的十几度 yaw 会让走廊绕 Z 开花。脚本这时会丢掉 `R_z`、写出单位阵，并标明 `observable_rotation: false`。平移同样不可观。不要把这份包的结果当外参。
