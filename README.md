@@ -1,37 +1,25 @@
 # lidar_imu_calibration
 
-离线辨识雷达相对 IMU 的外参，输出和 Faster-LIO 相同的定义：
+Offline lidar-to-IMU extrinsics in Faster-LIO form:
 
-```
+```text
 p_imu = R * p_lidar + t
 ```
 
-对应 yaml 里的 `mapping/extrinsic_R`、`mapping/extrinsic_T`。几何关系是装上去就固定的，**不要**在里程计里在线估外参。
-
-方法：相邻帧 ICP（Besl & McKay 1992）得到雷达角速度，再和 IMU 陀螺做时间互相关与 Wahba/SVD 求 `R`（与 LI-Init / Zhu IROS 2022 的角速度对齐同一类）。平移在平面车上往往激励不够，默认保留先验 `t`。
-
-实车录包步骤（XYZIRT、激励、查 `observable_rotation`）见 [docs/record-scout-helios16-bag.md](docs/record-scout-helios16-bag.md)。今天这份 60 s 平面包已放弃用来估外参。
-
-## 明天实车怎么录
-
-1. `rslidar_sdk` 必须用 `POINT_TYPE=XYZIRT` 编译，让 `/rslidar_points` 带官方 `ring` 和包时间。
-2. 先静止 8–10 秒，再原地左右转、走 8 字、加减速。尽量给一点俯仰/侧倾。录 2–3 分钟。
-3. 执行：
+Write `mapping/extrinsic_R` / `mapping/extrinsic_T`. Do not enable online
+extrinsic estimation in the odometer.
 
 ```bash
 rosrun lidar_imu_calibration record_calib_bag.sh ~/scout-helios16-calib.bag
-```
-
-4. 辨识：
-
-```bash
 rosrun lidar_imu_calibration identify_lidar_imu_extrinsic.py \
   ~/scout-helios16-calib.bag \
   --prior-t 0,0,0.307 \
-  --output /tmp/scout_extrinsic.yaml \
-  --report /tmp/scout_extrinsic.json
+  --output scout_extrinsic.yaml \
+  --report scout_extrinsic.json
 ```
 
-5. 看 `observable_rotation`。为真才把 `extrinsic_R` / `extrinsic_T` 抄进 Faster-LIO 的 `scout_helios16.yaml`，并保持 `extrinsic_est_en: false`。
+Require `POINT_TYPE=XYZIRT` (`ring` + `timestamp` on `/rslidar_points`) and
+`observable_rotation: true` before copying into `scout_helios16.yaml`.
 
-当前这份场外 60 秒包几乎只有绕 Z 的角速度。Wahba 对这种运动**看不出偏航**（`R_z` 把 `[0,0,ω]` 映成自己），拟合出来的十几度 yaw 会让走廊绕 Z 开花。脚本这时会丢掉 `R_z`、写出单位阵，并标明 `observable_rotation: false`。平移同样不可观。不要把这份包的结果当外参。
+Recording recipe: `memory/field/agilex/lidar-imu-extrinsic-recording.md`
+(`xgc2-dev-memory`).
